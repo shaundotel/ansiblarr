@@ -1,0 +1,5 @@
+---
+- name: Restart Sonarr Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.sonarr_docker_name }}"
+  with_items: "{{ sonarr_instances }}"
+  listen: restart sonarr

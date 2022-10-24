@@ -1,0 +1,7 @@
+---
+gluetun_docker_repo: qmcgaw/gluetun
+gluetun_docker_tag: latest
+gluetun_http_control_server_address: "127.0.0.1:8000"
+gluetun_health_target_address: "github.com:443"
+gluetun_health_vpn_duration_initial: 10s
+gluetun_health_vpn_duration_addition: 5s

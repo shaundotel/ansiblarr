@@ -1,0 +1,3 @@
+---
+overseerr_docker_repo: linuxserver/overseerr
+overseerr_docker_tag: latest

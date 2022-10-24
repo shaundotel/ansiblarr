@@ -1,0 +1,18 @@
+---
+- name: Include
+  include_role:
+    name: "{{ arr_role }}"
+    apply:
+      tags:
+        - "{{ arr_role }}"
+        - arr-butler-play
+  with_items:
+    - gluetun
+    - overseerr
+    - prowlarr
+    - qbittorrent
+    - radarr
+    - sonarr
+  loop_control:
+    loop_var: arr_role
+  tags: always

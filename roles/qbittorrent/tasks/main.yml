@@ -1,0 +1,9 @@
+---
+- name: qbittorrent instance
+  include_tasks: qbittorrent_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ qbittorrent_instances }}"
+  when: qbittorrent_instances is defined
+  loop_control:
+    loop_var: instance_var

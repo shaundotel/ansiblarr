@@ -1,0 +1,42 @@
+---
+- name: Host Fact
+  hosts: all
+  tasks:
+    - name: Gather Facts
+      setup:
+      tags: always
+      when:
+        - ansible_facts == {}
+  tags: always
+
+- name: Arr Butler Play
+  hosts:
+    - arr
+  roles:
+    - role: arr/butler
+  tags:
+    - arr-butler-play
+
+- name: Arr Playboy Play
+  hosts:
+    - arr
+  roles:
+    - role: arr/playboy
+  tags:
+    - arr-playboy-play
+
+- name: Arr Nginx Play
+  hosts:
+    - arr
+  roles:
+    - role: nginx
+  tags:
+    - nginx
+
+- name: Arr Stack Pack Play
+  hosts:
+    - arr
+  roles:
+    - role: stack_pack
+  tags:
+    - stack-pack

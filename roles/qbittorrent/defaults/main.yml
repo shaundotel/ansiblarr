@@ -1,0 +1,4 @@
+---
+qbittorrent_docker_repo: linuxserver/qbittorrent
+qbittorrent_docker_tag: latest
+qbittorrent_bind: "127.0.0.1"

@@ -1,0 +1,13 @@
+---
+base_dir:
+dirs:
+docker_name:
+docker_repo:
+docker_tag:
+dockerrun_path:
+dockerupdate_path:
+files:
+gid:
+group:
+uid:
+user:

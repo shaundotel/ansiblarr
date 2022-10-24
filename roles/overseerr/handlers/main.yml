@@ -1,0 +1,6 @@
+---
+- name: Restart Overseerr Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.overseerr_docker_name }}"
+  with_items: "{{ overseerr_instances }}"
+  listen: restart overseerr
+

@@ -1,0 +1,4 @@
+---
+sonarr_docker_repo: linuxserver/sonarr
+sonarr_docker_tag: latest
+sonarr_bind: "127.0.0.1"

@@ -1,0 +1,9 @@
+---
+- name: Plex instance
+  include_tasks: plex_server_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ plex_server_instances }}"
+  when: plex_server_instances is defined
+  loop_control:
+    loop_var: instance_var

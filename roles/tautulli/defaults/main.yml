@@ -1,0 +1,5 @@
+---
+tautulli_plex_log_dir: null
+tautulli_docker_repo: linuxserver/tautulli
+tautulli_docker_tag: latest
+tautulli_http_host: 127.0.0.1

@@ -1,0 +1,11 @@
+---
+- name: Include nginx subtasks
+  include_tasks: 
+    file: "nginx.yml"
+  when: "hostvars[inventory_hostname][role_name + '_was_executed'] is not defined"
+
+- name: "Define role executed var {{ role_name }}_was_executed"
+  set_fact:
+    "{{ role_name }}_was_executed": true
+    cacheable: true
+  when: "hostvars[inventory_hostname][role_name + '_was_executed'] is not defined"

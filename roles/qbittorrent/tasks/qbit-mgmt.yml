@@ -1,0 +1,32 @@
+---
+- name: Create qbit-mgmt directory
+  ansible.builtin.file:
+    path: "{{ qbittorrent_base_dir }}/data/qbit-mgmt"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: '0755'
+    state: directory
+
+- name: Ensure files for qbit-mgmt are present
+  ansible.builtin.file:
+    path: "{{ qbittorrent_base_dir }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - config-schema.yml
+    - qbit-mgmt.py
+    - run.sh
+  notify: run qbit-mgmt
+
+- name: Ensure qbit-mgmt/config.yml is up to date
+  template:
+    src: qbit-mgmt/config.yml.j2
+    dest: "{{ qbittorrent_base_dir }}/data/qbit-mgmt/config.yml"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0755"
+  notify: run qbit-mgmt

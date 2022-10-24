@@ -1,0 +1,10 @@
+---
+- name: Restart Nginx Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ nginx_docker_name }}"
+  listen: restart nginx
+
+- name: Reload nginx config
+  command:
+    cmd: "{{ nginx_base_dir }}/nginx_reload"
+  tags: always
+  listen: "reload nginx config"

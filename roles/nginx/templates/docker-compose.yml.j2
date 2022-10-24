@@ -1,0 +1,38 @@
+version: "{{ docker_compose_file_version }}"
+services:
+  {{ nginx_docker_name }}:
+    build:
+        context: {{ nginx_base_dir }}
+    depends_on:
+      {{ arr_vpn_docker_name }}:
+        condition: service_healthy
+    environment:
+        PGID: "{{ nginx_pgid }}"
+        PUID: "{{ nginx_puid }}"
+        TZ: "US/Eastern"
+        UMASK: "022"
+    healthcheck:
+        interval: 20s
+        retries: 3
+        start_period: 60s
+        test:
+            - CMD
+            - curl
+            - --fail
+            - --insecure
+            - --silent
+            - --output
+            - /dev/null
+            - https://127.0.0.1:{{ nginx_https_port }}/bling_status
+        timeout: 10s
+    logging: 
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    network_mode: "service:{{ arr_vpn_docker_name }}"
+    restart: always
+    volumes:
+        - "{{ nginx_base_dir }}/config/:/config/"
+        - "{{ nginx_base_dir }}/www:/var/www"
+        - "{{ nginx_base_dir }}/nginx_s6_run:/etc/services.d/nginx/run"

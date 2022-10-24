@@ -1,0 +1,86 @@
+---
+- name: Set role variable facts defined by outter variables for multiple instances
+  set_fact:
+    "{{ role_item.key }}": "{{ role_item.value }}"
+  with_dict: "{{ instance }}"
+  loop_control:
+    loop_var: role_item
+
+- name: qbittorrent docker pool app
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ qbittorrent_base_dir }}"
+    container_name: "{{ qbittorrent_docker_name }}"
+    dirs:
+      - "{{ qbittorrent_base_dir }}"
+      - "{{ qbittorrent_base_dir }}/data"
+      - "{{ qbittorrent_base_dir }}/data/logs"
+    docker_repo: "{{ qbittorrent_docker_repo }}"
+    docker_tag: "{{ qbittorrent_docker_tag }}"
+    dockerrun_path: "{{ qbittorrent_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ qbittorrent_base_dir }}/dockerupdate"
+    gid: "{{ arr_gid }}"
+    group: "{{ arr_user_group }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', 'docker-compose.yml.j2') }}"
+        dest: "{{ qbittorrent_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+    uid: "{{ arr_uid }}"
+    user: "{{ arr_user }}"
+  notify: restart qbittorrent
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ item }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ qbittorrent_base_dir }}/data/logs"
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ qbittorrent_base_dir }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  when: "arr_NO_BACKUP | default(false) == true"
+
+- name: Get stats on qBittorrent.conf
+  stat:
+    path: "{{ qbittorrent_base_dir }}/data/qBittorrent/qBittorrent.conf"
+  register: config_file
+
+- name: Ensure qBittorrent.conf file is present in "{{ qbittorrent_base_dir }}/data/qBittorrent/"
+  template:
+    src: qBittorrent.conf.j2
+    dest: "{{ qbittorrent_base_dir }}/data/qBittorrent/qBittorrent.conf"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0600"
+  when: config_file.stat.exists == false
+  notify: restart qbittorrent
+
+- name: Ensure options are set is in section "[Preferences]" in qBittorrent.conf
+  community.general.ini_file:
+    path: "{{ qbittorrent_base_dir }}/data/qBittorrent/qBittorrent.conf"
+    section: Preferences
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    mode: '0600'
+  with_dict:
+    WebUI\Port: "{{ qbittorrent_webui_port }}"
+    WebUI\Address: "{{ qbittorrent_bind }}"
+  notify: restart qbittorrent
+
+- name: qbit-mgmt
+  include_tasks: qbit-mgmt.yml

@@ -1,0 +1,24 @@
+---
+- name: common_app_setup role for gluetun
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ gluetun_base_dir }}"
+    container_name: "{{ arr_vpn_docker_name }}"
+    dirs:
+      - "{{ gluetun_base_dir }}"
+    docker_repo: "{{ gluetun_docker_repo }}"
+    docker_tag: "{{ gluetun_docker_tag }}"
+    dockerrun_path: "{{ gluetun_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ gluetun_base_dir }}/dockerupdate"
+    gid: "{{ arr_gid }}"
+    group: "{{ arr_user_group }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', './docker-compose.yml.j2') }}"
+        dest: "{{ gluetun_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+    uid: "{{ arr_uid }}"
+    user: "{{ arr_user }}"
+  notify: restart gluetun

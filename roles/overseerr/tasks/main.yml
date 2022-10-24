@@ -1,0 +1,8 @@
+- name: Overseerr instance
+  include_tasks: overseerr_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ overseerr_instances }}"
+  when: overseerr_instances is defined
+  loop_control:
+    loop_var: instance_var

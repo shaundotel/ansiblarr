@@ -1,0 +1,90 @@
+---
+- name: Set role variable facts defined by outter variables for multiple instances
+  set_fact:
+    "{{ role_item.key }}": "{{ role_item.value }}"
+  with_dict: "{{ instance }}"
+  loop_control:
+    loop_var: role_item
+
+- name: common_app_setup role
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ radarr_base_dir }}"
+    container_name: "{{ radarr_docker_name }}"
+    dirs:
+      - "{{ radarr_base_dir }}"
+      - "{{ radarr_base_dir }}/data"
+      - "{{ radarr_base_dir }}/data/logs"
+    docker_repo: "{{ radarr_docker_repo }}"
+    docker_tag: "{{ radarr_docker_tag }}"
+    dockerrun_path: "{{ radarr_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ radarr_base_dir }}/dockerupdate"
+    gid: "{{ arr_gid }}"
+    group: "{{ arr_user_group }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', './docker-compose.yml.j2') }}"
+        dest: "{{ radarr_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+    uid: "{{ arr_uid }}"
+    user: "{{ arr_user }}"
+  notify: restart radarr
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ item }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ radarr_base_dir }}/data/logs"
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ radarr_base_dir }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  when: "arr_NO_BACKUP | default(false) == true"
+
+- name: Get stats on config.xml
+  stat:
+    path: "{{ radarr_base_dir }}/data/config.xml"
+  register: config_xml_file
+
+- name: Ensure config.xml file is present in "{{ radarr_base_dir }}/data"
+  template:
+    src: config.xml.j2
+    dest: "{{ radarr_base_dir }}/data/config.xml"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0600"
+  when: config_xml_file.stat.exists == false
+  notify: restart radarr
+
+- name: Ensure values in {{ radarr_base_dir }}/data/config.xml are set
+  community.general.xml:
+    path: "{{ radarr_base_dir }}/data/config.xml"
+    xpath: /Config/{{ item.key }}
+    value: "{{ item.value }}"
+  with_dict:
+    BindAddress: "{{ radarr_bind | string }}"
+    Port: "{{ radarr_port | string }}"
+    UrlBase: "{{ radarr_docker_name | string }}"
+  notify: restart radarr
+
+- name: Ensure {{ radarr_base_dir }}/data/config.xml is owned by {{ arr_user }}:{{ arr_user_group }} with mode 0600
+  file:
+    path: "{{ radarr_base_dir }}/data/config.xml"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0600"
+  notify: restart radarr

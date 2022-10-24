@@ -1,0 +1,9 @@
+---
+- name: Tautulli instance
+  include_tasks: tautulli_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ tautulli_instances }}"
+  when: tautulli_instances is defined
+  loop_control:
+    loop_var: instance_var
