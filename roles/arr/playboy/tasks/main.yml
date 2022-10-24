@@ -1,0 +1,14 @@
+---
+- name: Include
+  include_role:
+    name: "{{ arr_role }}"
+    apply:
+      tags:
+        - "{{ arr_role }}"
+        - arr-playboy-play
+  with_items:
+    - plex_server
+    - tautulli
+  loop_control:
+    loop_var: arr_role
+  tags: always

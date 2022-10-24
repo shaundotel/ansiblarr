@@ -1,0 +1,90 @@
+---
+- name: Set role variable facts defined by outter variables for multiple instances
+  set_fact:
+    "{{ role_item.key }}": "{{ role_item.value }}"
+  with_dict: "{{ instance }}"
+  loop_control:
+    loop_var: role_item
+    
+- name: common_app_setup role
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ prowlarr_base_dir }}"
+    container_name: "{{ prowlarr_docker_name }}"
+    dirs:
+      - "{{ prowlarr_base_dir }}"
+      - "{{ prowlarr_base_dir }}/data"
+      - "{{ prowlarr_base_dir }}/data/logs"
+    docker_repo: "{{ prowlarr_docker_repo }}"
+    docker_tag: "{{ prowlarr_docker_tag }}"
+    dockerrun_path: "{{ prowlarr_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ prowlarr_base_dir }}/dockerupdate"
+    gid: "{{ arr_gid }}"
+    group: "{{ arr_user_group }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', 'docker-compose.yml.j2') }}"
+        dest: "{{ prowlarr_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+    uid: "{{ arr_uid }}"
+    user: "{{ arr_user }}"
+  notify: restart prowlarr
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ item }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ prowlarr_base_dir }}/data/logs"
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ prowlarr_base_dir }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  when: "arr_NO_BACKUP | default(false) == true"
+
+- name: Get stats on config.xml
+  stat:
+    path: "{{ prowlarr_base_dir }}/data/config.xml"
+  register: config_xml_file
+
+- name: Ensure config.xml file is present in "{{ prowlarr_base_dir }}/data"
+  template:
+    src: config.xml.j2
+    dest: "{{ prowlarr_base_dir }}/data/config.xml"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0600"
+  when: config_xml_file.stat.exists == false
+  notify: restart prowlarr
+
+- name: Ensure values in {{ prowlarr_base_dir }}/data/config.xml are set
+  community.general.xml:
+    path: "{{ prowlarr_base_dir }}/data/config.xml"
+    xpath: /Config/{{ item.key }}
+    value: "{{ item.value }}"
+  with_dict:
+    BindAddress: "{{ prowlarr_bind | string }}"
+    Port: "{{ prowlarr_port | string }}"
+    UrlBase: "{{ prowlarr_docker_name | string }}"
+  notify: restart prowlarr
+
+- name: Ensure {{ prowlarr_base_dir }}/data/config.xml is owned by {{ arr_user }}:{{ arr_user_group }} with mode 0600
+  file:
+    path: "{{ prowlarr_base_dir }}/data/config.xml"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    mode: "0600"
+  notify: restart prowlarr

@@ -1,0 +1,35 @@
+version: "{{ docker_compose_file_version }}"
+services:
+  {{ overseerr_docker_name }}:
+    depends_on:
+      {{ arr_vpn_docker_name }}:
+        condition: service_healthy
+      {{ nginx_docker_name }}:
+        condition: service_started
+    environment:
+        PGID: "{{ arr_gid }}"
+        PUID: "{{ arr_uid }}"
+        TZ: "US/Eastern"
+        UMASK: "022"
+    healthcheck:
+        interval: 20s
+        retries: 3
+        start_period: 60s
+        test:
+            - CMD
+            - wget
+            - -q
+            - -O
+            - /dev/null
+            - http://127.0.0.1:5055/login
+        timeout: 10s
+    image: "{{ overseerr_docker_repo }}:{{ overseerr_docker_tag }}"
+    logging: 
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    network_mode: "service:{{ arr_vpn_docker_name }}"
+    restart: always
+    volumes:
+        - "{{ overseerr_base_dir }}/data/:/config/"

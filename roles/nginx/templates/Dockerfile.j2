@@ -1,0 +1,3 @@
+FROM {{ nginx_docker_repo }}:{{ nginx_docker_tag }}
+
+RUN apk add nginx-mod-http-headers-more

@@ -1,0 +1,56 @@
+---
+- name: Set role variable facts defined by outter variables for multiple instances
+  set_fact:
+    "{{ role_item.key }}": "{{ role_item.value }}"
+  with_dict: "{{ instance }}"
+  loop_control:
+    loop_var: role_item
+
+- name: common_app_setup role
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ overseerr_base_dir }}"
+    container_name: "{{ overseerr_docker_name }}"
+    dirs:
+      - "{{ overseerr_base_dir }}"
+      - "{{ overseerr_base_dir }}/data"
+      - "{{ overseerr_base_dir }}/data/logs"
+    docker_repo: "{{ overseerr_docker_repo }}"
+    docker_tag: "{{ overseerr_docker_tag }}"
+    dockerrun_path: "{{ overseerr_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ overseerr_base_dir }}/dockerupdate"
+    gid: "{{ arr_gid }}"
+    group: "{{ arr_user_group }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', 'docker-compose.yml.j2') }}"
+        dest: "{{ overseerr_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+    uid: "{{ arr_uid }}"
+    user: "{{ arr_user }}"
+  notify: restart overseerr
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ item }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ overseerr_base_dir }}/data/logs"
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ overseerr_base_dir }}/{{ no_backup_file_tag }}"
+    state: touch
+    mode: "0700"
+    owner: "{{ arr_user }}"
+    group: "{{ arr_user_group }}"
+    modification_time: preserve
+    access_time: preserve
+  when: "arr_NO_BACKUP | default(false) == true"

@@ -1,0 +1,53 @@
+---
+argument_specs:
+  main:
+    options:
+      container_name:
+        description: Name of the Docker container_name
+        required: true
+        type: str
+      docker_repo:
+        description: Docker repository from which new image should be pulled
+        required: true
+        type: str
+      docker_tag:
+        description: |
+          Docker tag which holds the new image. This should be a dynamic tag that will be updated regular upstream.
+        required: true
+        type: str
+      dockerupdate_file_path:
+        description: |
+          Full file path where the Docker container update file should be placed.
+        required: true
+        type: str
+      dockerupdate_file_group:
+        description: Group of the dockerupdate file
+        default: root
+        required: false
+        type: str
+      dockerupdate_file_mode:
+        description: File mode of the dockerupdate file
+        default: "0700"
+        required: false
+        type: str
+      dockerupdate_file_owner:
+        description: Owner of the dockerupdate file
+        default: root
+        required: false
+        type: str
+      docker_update_run:
+        default: false
+        description: If true run the update file
+        required: false
+        type: bool
+      dockerrun_file_path:
+        description: |
+          Full file path of the docker run script that will be called during update to
+          start the container after the update.
+        required: true
+        type: str
+      stop_timeout:
+        default: 30
+        description: |
+          Time to wait for the container to stop after STOPSIGNAL after which SIGKILL will be sent.
+        required: false

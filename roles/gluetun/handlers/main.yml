@@ -1,0 +1,4 @@
+---
+- name: Restart Gluetun Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ arr_vpn_docker_name }}"
+  listen: restart gluetun

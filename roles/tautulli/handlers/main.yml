@@ -1,0 +1,5 @@
+---
+- name: Restart Tautulli Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.tautulli_docker_name }}"
+  with_items: "{{ tautulli_instances }}"
+  listen: restart tautulli

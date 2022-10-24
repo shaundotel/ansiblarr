@@ -1,0 +1,5 @@
+---
+- name: Restart Plex Server Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.plex_server_docker_name }}"
+  with_items: "{{ plex_server_instances }}"
+  listen: restart plex_server

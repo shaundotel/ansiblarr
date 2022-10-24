@@ -1,0 +1,4 @@
+---
+radarr_docker_repo: linuxserver/radarr
+radarr_docker_tag: latest
+radarr_bind: "127.0.0.1"

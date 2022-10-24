@@ -1,0 +1,26 @@
+---
+- name: Create private key (X25519)
+  community.crypto.openssl_privatekey:
+    path: "{{ nginx_base_dir}}/config/nginx/certs/private.key"
+    type: RSA
+  notify: "reload nginx config"
+
+- name: Create certificate signing request (CSR) for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ nginx_base_dir}}/config/nginx/certs/private.key"
+    common_name: arr.com
+    organization_name: Arr
+    subject_alt_name:
+      - "DNS:arr.com"
+      - "DNS:arr.com"
+  register: csr
+  changed_when: false
+
+- name: Create self-signed certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ nginx_base_dir}}/config/nginx/certs/certificate.pem"
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: "{{ nginx_base_dir}}/config/nginx/certs/private.key"
+    selfsigned_not_after: "+365d"
+    provider: selfsigned
+  notify: "reload nginx config"

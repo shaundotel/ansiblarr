@@ -1,0 +1,126 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+type: object
+properties:
+  qbit:
+    type: object
+    properties:
+      host:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+    required:
+      - host
+      - username
+      - password
+  tracker_tags:
+    type: array
+    items:
+      - type: object
+        properties:
+          url_host_regex:
+            type: string
+          tag:
+            type: string
+        required:
+          - url_host_regex
+          - tag
+      - type: object
+        properties:
+          url_host_regex:
+            type: string
+          tag:
+            type: string
+        required:
+          - url_host_regex
+          - tag
+      - type: object
+        properties:
+          url_host_regex:
+            type: string
+          tag:
+            type: string
+        required:
+          - url_host_regex
+          - tag
+  file_extension_tags:
+    type: array
+    items:
+      - type: object
+        properties:
+          extension_regex:
+            type: string
+          tag:
+            type: string
+        required:
+          - extension_regex
+          - tag
+      - type: object
+        properties:
+          extension_regex:
+            type: string
+          tag:
+            type: string
+        required:
+          - extension_regex
+          - tag
+  seed_limits:
+    type: object
+    properties:
+      T.tleech:
+        type: object
+        properties:
+          ratio:
+            type: integer
+          time:
+            type: integer
+        required:
+          - ratio
+          - time
+      T.ipt:
+        type: object
+        properties:
+          ratio:
+            type: integer
+          time:
+            type: integer
+        required:
+          - ratio
+          - time
+      T.unknown:
+        type: object
+        properties:
+          ratio:
+            type: integer
+          time:
+            type: integer
+        required:
+          - ratio
+          - time
+    required:
+      - T.tleech
+      - T.ipt
+      - T.unknown
+  tag_prefix:
+    type: object
+    properties:
+      tracker:
+        type: string
+      file:
+        type: string
+    required:
+      - tracker
+      - file
+  root_dir:
+    type: string
+  recycle_bin:
+    type: string
+required:
+  - qbit
+  - tracker_tags
+  - file_extension_tags
+  - seed_limits
+  - tag_prefix
+  - root_dir
+  - recycle_bin

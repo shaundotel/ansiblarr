@@ -1,0 +1,8 @@
+---
+container_name:
+docker_repo:
+docker_tag:
+dockerupdate_file_path:
+docker_update_run: false
+dockerrun_file_path:
+stop_timeout: 30

@@ -1,0 +1,15 @@
+---
+- name: Ensure python3-lxml package is present
+  package:
+    name: python3-lxml
+    state: present
+  when: prowlarr_instances is defined
+
+- name: prowlarr instance
+  include_tasks: prowlarr_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ prowlarr_instances }}"
+  when: prowlarr_instances is defined
+  loop_control:
+    loop_var: instance_var

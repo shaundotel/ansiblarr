@@ -1,0 +1,51 @@
+---
+- name: Invoking common app setup for role
+  ansible.builtin.debug:
+    var: ansible_parent_role_names
+
+- name: Ensure docker image user group is present {{ group }}
+  ansible.builtin.group:
+    name: "{{ group }}"
+    gid: "{{ gid }}"
+    state: present
+
+- name: Ensure docker image user is present {{ user }}
+  ansible.builtin.user:
+    name: "{{ user }}"
+    uid: "{{ uid }}"
+    group: "{{ group }}"
+    state: present
+
+- name: Ensure directories are present
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "{{ item.mode | default('0700') }}"
+    owner: "{{ user }}"
+    group: "{{ group }}"
+  with_items: "{{ dirs }}"
+
+- name: Ensure files are in place
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0700') }}"
+  no_log: "{{ item.no_log | default(omit) }}"
+  with_items: "{{ files }}"
+
+- name: Invoke docker_container_update_file role
+  ansible.builtin.include_role:
+    name: docker_container_update_file
+  vars:
+    dockerupdate_file_path: "{{ dockerupdate_path }}"
+    docker_update_run: false
+    dockerupdate_file_mode: "{{ dockerupdate_mode | default('0700') }}"
+    dockerupdate_file_owner: "{{ dockerupdate_owner | default('root') }}"
+    dockerupdate_file_group: "{{ dockerupdate_group | default('root') }}"
+    dockerrun_file_path: "{{ dockerrun_path }}"
+
+- name: Ending common app setup app for role
+  ansible.builtin.debug:
+    var: ansible_parent_role_names

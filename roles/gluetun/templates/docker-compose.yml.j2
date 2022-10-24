@@ -1,0 +1,100 @@
+version: "{{ docker_compose_file_version }}"
+services:
+  {{ arr_vpn_docker_name }}:
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns_search: oooooooo
+    environment:
+      # Control server
+      HTTP_CONTROL_SERVER_ADDRESS: "{{ gluetun_http_control_server_address }}" 
+      HTTP_CONTROL_SERVER_LOG: "off"
+
+      # DNS Options
+      BLOCK_ADS: "on"
+      BLOCK_MALICIOUS: "on"
+      BLOCK_SURVEILLANCE: "on"
+      DNS_ADDRESS: "127.0.0.1"
+      DNS_KEEP_NAMESERVER: "on"
+      DNS_UPDATE_PERIOD: "24h"
+      DOT: "on"
+      DOT_CACHING: "on"
+      DOT_IPV6: "off"
+      DOT_PRIVATE_ADDRESS: 127.0.0.1/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,::1/128,fc00::/7,fe80::/10,::ffff:7f00:1/104,::ffff:a00:0/104,::ffff:a9fe:0/112,::ffff:ac10:0/108,::ffff:c0a8:0/112
+      DOT_PROVIDERS: cloudflare
+      DOT_VALIDATION_LOGLEVEL: "0"
+      DOT_VERBOSITY: "0"
+      DOT_VERBOSITY_DETAILS: "0"
+      UNBLOCK: ""
+
+      # Health
+      HEALTH_TARGET_ADDRESS: "{{ gluetun_health_target_address }}" 
+      HEALTH_VPN_DURATION_ADDITION: "{{ gluetun_health_vpn_duration_addition }}" 
+      HEALTH_VPN_DURATION_INITIAL: "{{ gluetun_health_vpn_duration_initial }}" 
+
+      # HTTP proxy
+      HTTPPROXY: "off"
+
+      # Logging
+      LOG_LEVEL: warning
+
+      # OpenVPN
+      OPENVPN_PASSWORD: "{{ gluetun_openvpn_password }}" 
+      OPENVPN_USER: "{{ gluetun_openvpn_user }}" 
+      OPENVPN_VERBOSITY: "0"
+
+      # Private Internet Access only:   
+      PRIVATE_INTERNET_ACCESS_VPN_PORT_FORWARDING: "off"
+      PRIVATE_INTERNET_ACCESS_VPN_PORT_FORWARDING_STATUS_FILE: "{{ gluetun_base_dir }}/forwarded_port.txt" 
+      
+      # Public IP
+      PUBLICIP_FILE: "/tmp/gluetun/ip"
+      PUBLICIP_PERIOD: 12h
+
+      # Pprof
+      PPROF_BLOCK_PROFILE_RATE: "0"
+      PPROF_ENABLED: "no"
+      PPROF_HTTP_SERVER_ADDRESS: "127.0.0.1:6060"
+      PPROF_MUTEX_PROFILE_RATE: "0"
+
+      # Shadowsocks
+      SHADOWSOCKS: "off"
+
+      # VPN server filtering
+      SERVER_REGIONS: "{{ gluetun_server_regions }}" 
+
+      # Extras
+      PGID: "{{ arr_gid }}" 
+      PUID: "{{ arr_uid }}" 
+      TZ: US/Eastern
+
+      # Common VPN options
+      VPN_INTERFACE: tun0
+      VPN_SERVICE_PROVIDER: "{{ gluetun_vpn_server_provider }}"
+
+    image: "{{ gluetun_docker_repo }}:{{ gluetun_docker_tag }}"
+    logging: 
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - arr_lan
+    restart: always
+    volumes:
+        - "{{ gluetun_base_dir }}:/gluetun"
+
+networks:
+  arr_lan:
+    driver: ipvlan 
+    driver_opts:
+      ipvlan_mode: l2
+      parent: "{{ ansible_default_ipv4.interface }}"
+    ipam:
+      driver: default
+      config:
+        - subnet: "{{ ansible_default_ipv4.address }}/{{ (ansible_default_ipv4.address + '/' + ansible_default_ipv4.netmask) | ansible.utils.ipaddr('prefix') }}"
+          gateway: "{{ ansible_default_ipv4.gateway }}"
+          ip_range: "{{ docker_compose_arr_lan_ip_range }}"
+

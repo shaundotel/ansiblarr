@@ -1,0 +1,143 @@
+---
+- name: common_app_setup role
+  import_role:
+    name: common_app_setup
+  vars:
+    base_dir: "{{ nginx_base_dir }}"
+    container_name: "{{ nginx_docker_name }}"
+    dirs:
+      - "{{ nginx_base_dir }}"
+    docker_repo: "{{ nginx_docker_repo }}"
+    docker_tag: "{{ nginx_docker_tag }}"
+    dockerrun_path: "{{ nginx_base_dir }}/dockerrun"
+    dockerupdate_path: "{{ nginx_base_dir }}/dockerupdate"
+    gid: "{{ nginx_pgid }}"
+    group: "{{ nginx_pgroup }}"
+    mode: create
+    files:
+      - content: "{{ lookup('template', 'Dockerfile.j2') }}"
+        dest: "{{ nginx_base_dir }}/Dockerfile"
+        owner: root
+        group: root
+      - content: "{{ lookup('template', 'docker-compose.yml.j2') }}"
+        dest: "{{ nginx_base_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+      - content: "{{ lookup('template', 'nginx_s6_run.j2') }}"
+        dest: "{{ nginx_base_dir }}/nginx_s6_run"
+        owner: root
+        group: root
+        mode: "0711"
+    uid: "{{ nginx_puid }}"
+    user: "{{ nginx_puser }}"
+  notify: restart nginx
+
+- name: Ensure directories are present and owned by {{ nginx_puser }}:{{ nginx_pgroup }}
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0720"
+    owner:
+    group:
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ nginx_base_dir }}/config/nginx/site-confs/"
+    - "{{ nginx_base_dir }}/config/nginx/conf.d/"
+    - "{{ nginx_base_dir}}/config/nginx/ssl/"
+    - "{{ nginx_base_dir}}/config/nginx/certs/"
+    - "{{ nginx_base_dir}}/config/log/"
+    - "{{ nginx_base_dir}}/www/"
+
+- name: Ensure no back up tag '{{ no_backup_file_tag }}' is present in required directories
+  file:
+    path: "{{ item }}/{{ no_backup_file_tag }}"
+    state: touch
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+    modification_time: preserve
+    access_time: preserve
+  with_items:
+    - "{{ nginx_base_dir}}/config/log/"
+
+- name: Ensure nginx_reload is placed in {{ nginx_base_dir }}/nginx_reload
+  template:
+    src: nginx_reload.j2
+    dest: "{{ nginx_base_dir }}/nginx_reload"
+    owner: "root"
+    group: "root"
+    mode: "0700"
+  notify: "reload nginx config"
+
+- name: Ensure mime.types is placed in {{ nginx_base_dir }}/config/nginx/mime.types
+  copy:
+    src: mime.types
+    dest: "{{ nginx_base_dir }}/config/nginx/mime.types"
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+  notify: "reload nginx config"
+
+- name: Ensure error.html is placed in {{ nginx_base_dir }}/www/
+  copy:
+    src: error.html 
+    dest: "{{ nginx_base_dir }}/www/error.html"
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+  notify: "reload nginx config"
+
+- name: Ensure status-text-map.conf is placed in {{ nginx_base_dir }}/config/nginx/conf.d
+  copy:
+    src: status-text-map.conf
+    dest: "{{ nginx_base_dir }}/config/nginx/conf.d/status-text-map.conf"
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+  notify: "reload nginx config"
+
+- name: Ensure nginx.conf is placed in {{ nginx_base_dir }}/config/nginx/nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_base_dir }}/config/nginx/nginx.conf"
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+    mode: "0775"
+  notify: "reload nginx config"
+
+- name: Ensure site-confs/default.conf is placed in {{ nginx_base_dir }}/config/nginx/site-confs/default.conf
+  template:
+    src: site-confs/default.conf.j2
+    dest: "{{ nginx_base_dir }}/config/nginx/site-confs/default.conf"
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+    mode: "0775"
+  notify: "reload nginx config"
+
+- name: Check file DH Parameters
+  ansible.builtin.stat: 
+    path: "{{ nginx_base_dir }}/config/nginx/ssl/dhparam.pem"
+  register: dhparam_file
+
+- name: Generate DH Parameters file
+  community.crypto.openssl_dhparam:
+    path: "{{ nginx_base_dir }}/config/nginx/ssl/dhparam.pem"
+    size: 2048
+    owner: "{{ nginx_puser }}"
+    group: "{{ nginx_pgroup }}"
+    mode: "0755"
+  when: dhparam_file.stat.exists == false
+  notify: "reload nginx config"
+
+- name: Check file certificate
+  ansible.builtin.stat: 
+    path: "{{ nginx_base_dir}}/config/nginx/certs/certificate.pem"
+  register: cert_file
+
+- name: Get certificate information
+  community.crypto.x509_certificate_info:
+    path: "{{ nginx_base_dir}}/config/nginx/certs/certificate.pem"
+  register: cert_result
+  when: cert_file.stat.exists
+
+- name: Include certs subtasks if certificate has to be reissued
+  include_tasks: 
+    file: "certs.yml"
+  when: cert_file.stat.exists == false or cert_result.expired

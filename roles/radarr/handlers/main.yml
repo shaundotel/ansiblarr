@@ -1,0 +1,5 @@
+---
+- name: Restart Radarr Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.radarr_docker_name }}"
+  with_items: "{{ radarr_instances }}"
+  listen: restart radarr

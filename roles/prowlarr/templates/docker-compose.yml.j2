@@ -1,0 +1,36 @@
+version: "{{ docker_compose_file_version }}"
+services:
+  {{ prowlarr_docker_name }}:
+    depends_on:
+      {{ arr_vpn_docker_name }}:
+        condition: service_healthy
+      {{ nginx_docker_name }}:
+        condition: service_started
+    environment:
+        PGID: "{{ arr_gid }}"
+        PUID: "{{ arr_uid }}"
+        TZ: "US/Eastern"
+        UMASK: "022"
+    healthcheck:
+        interval: 20s
+        retries: 3
+        start_period: 60s
+        test:
+            - CMD
+            - curl
+            - --fail
+            - --silent
+            - output
+            - /dev/null
+            - http://127.0.0.1:{{ prowlarr_port }}
+        timeout: 10s
+    image: "{{ prowlarr_docker_repo }}:{{ prowlarr_docker_tag }}"
+    logging: 
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    network_mode: "service:{{ arr_vpn_docker_name }}"
+    restart: always
+    volumes:
+        - "{{ prowlarr_base_dir }}/data/:/config/"

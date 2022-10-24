@@ -1,0 +1,36 @@
+---
+qbit:
+  host: "http://localhost:{{ qbittorrent_webui_port }}"
+  username: "{{ qbittorrent_credentials.username }}"
+  password: '{{ qbittorrent_credentials.password }}'
+
+tracker_tags:
+  - url_host_regex: "tracker.tleechreload.org"
+    tag: "tleech"
+  - url_host_regex: "localhost.stackoverflow.tech"
+    tag: "ipt"
+  - url_host_regex: ".*"
+    tag: "unknown"
+
+file_extension_tags:
+  - extension_regex: "\\.(rar|zip|tar\\.gz|z)$"
+    tag: "compressed"
+  - extension_regex: "\\.iso$"
+    tag: "iso"
+
+seed_limits:
+  T.tleech: &no_limit_seeding
+    ratio: -1
+    time: -1
+  T.ipt:
+    <<: *no_limit_seeding
+  T.unknown: &limit_seeding
+    ratio: 3
+    time: 43800
+
+tag_prefix:
+  tracker: "T."
+  file: "F."
+
+root_dir: /downloads
+recycle_bin: /downloads/.trash

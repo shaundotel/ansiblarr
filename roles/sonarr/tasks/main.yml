@@ -1,0 +1,15 @@
+---
+- name: Ensure python3-lxml package is present
+  package:
+    name: python3-lxml
+    state: present
+  when: sonarr_instances is defined
+
+- name: Sonarr instance
+  include_tasks: sonarr_instance.yml
+  vars:
+    instance: "{{ instance_var }}"
+  with_items: "{{ sonarr_instances }}"
+  when: sonarr_instances is defined
+  loop_control:
+    loop_var: instance_var

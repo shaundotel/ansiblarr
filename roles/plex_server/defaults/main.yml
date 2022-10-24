@@ -1,0 +1,3 @@
+---
+plex_server_docker_repo: linuxserver/plex
+plex_server_docker_tag: latest

@@ -1,0 +1,58 @@
+---
+argument_specs:
+  qbittorrent_instance:
+    options:
+      qbittorrent_base_dir:
+        description: >
+          The directory on host machine where data for this instance of
+          Qbittorrent will be stored. The directory specified via this option will
+          hold configuration files, docker run and update scripts and log files.
+        required: true
+        type: str
+      qbittorrent_data_mounts:
+        default: []
+        description: >
+          Additional volume mounts to bind to the container. The mount will be
+          exposed to the container at the same location as the host.
+        elements: str
+        required: false
+        type: list
+      qbittorrent_docker_name:
+        default: qbittorrent
+        description: Container name to associate with this instance of Qbittorrent.
+        required: false
+        type: str
+      qbittorrent_docker_repo:
+        default: linuxserver/qbittorrent
+        description: Docker repository to pull the image from.
+        required: false
+        type: str
+      qbittorrent_docker_tag:
+        default: latest
+        description: Docker image tag to pull from the repository.
+        required: false
+        type: str
+      qbittorrent_pgid:
+        default: 1000
+        description: Qbittorrent process GID.
+        required: false
+        type: str
+      qbittorrent_pgroup:
+        default: abc
+        description: Qbittorrent process group name.
+        required: false
+        type: str
+      qbittorrent_puid:
+        default: 1000
+        description: Qbittorrent process UID.
+        required: false
+        type: str
+      qbittorrent_puser:
+        default: abc
+        description: Qbittorrent process username.
+        required: false
+        type: str
+    short_description: Qbittorrent Docker container deployment role
+    description: >
+      Qbittorrent deployment and management role that deploys Qbittorrent Docker
+      container and manages it via the bind mounted volumes.

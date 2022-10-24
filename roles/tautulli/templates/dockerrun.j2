@@ -1,0 +1,18 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+docker run --detach \
+    --name '{{ tautulli_docker_name }}' \
+    --net host \
+    --restart always \
+    -e PUID='{{ tautulli_puid }}' \
+    -e PGID='{{ tautulli_pgid }}' \
+    -e TZ=US/Eastern \
+    -e UMASK=022 \
+    --health-cmd='curl --fail --silent --output /dev/null http://127.0.0.1:8181' \
+    --health-interval=10s \
+    --volume '{{ tautulli_base_dir }}':/config/ \
+{% if tautulli_plex_log_dir is not none %}
+    --volume '{{ tautulli_plex_log_dir }}':'{{ tautulli_plex_log_dir }}' \
+{% endif %}
+    {{ tautulli_docker_repo }}:{{ tautulli_docker_tag }}

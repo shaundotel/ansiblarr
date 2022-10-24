@@ -1,0 +1,12 @@
+---
+- name: Place dockerupdate file in {{ dockerupdate_file_path }}
+  ansible.builtin.template:
+    src: dockerupdate.j2
+    dest: "{{ dockerupdate_file_path }}"
+    owner: "{{ dockerupdate_file_owner | default('root') }}"
+    group: "{{ dockerupdate_file_group | default('root') }}"
+    mode: "{{ dockerupdate_file_mode | default('0700') }}"
+
+- name: Execute docker container update
+  ansible.builtin.command: "{{ docker_update_file_path }}"
+  when: docker_update_run

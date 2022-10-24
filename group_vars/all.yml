@@ -1,0 +1,6 @@
+---
+ansible_user: root
+
+no_backup_file_tag: NO_BACKUP.TAG
+
+keepass_key_file: "~/.ansible-keepass-vault-keys/arr-keepass-vault.keyx"

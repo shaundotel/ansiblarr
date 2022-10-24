@@ -1,0 +1,15 @@
+#!/bin/bash -eu
+# {{ ansible_managed }}
+
+docker pull '{{ docker_repo }}:{{ docker_tag }}'
+
+container_state=$(docker ps --all --filter 'name=^/{{ container_name }}$' --format '{{ '{{' }}.State{{ '}}' }}')
+
+if [[ $container_state != "" ]]; then
+    echo "** Found container in '$container_state' state: '{{ container_name }}'"
+    docker stop --time '{{ stop_timeout }}' '{{ container_name }}'
+    docker wait '{{ container_name }}'
+    docker rm '{{ container_name }}'
+fi
+
+'{{ dockerrun_file_path }}'

@@ -1,0 +1,14 @@
+---
+# - name: Reload Qbittorrent Configuration
+#   command: "{{ qbittorrent_base_dir }}/qbittorrent_reload"
+#   listen: reload qbittorrent configuration
+
+- name: Restart qbittorrent Docker container
+  command: "{{ stack_pack_base_dir }}/dc.sh up --detach --always-recreate-deps --force-recreate {{ item.qbittorrent_docker_name }}"
+  with_items: "{{ prowlarr_instances }}"
+  listen: restart qbittorrent
+
+- name: Run qbit-mgmt.py
+  command: "docker exec {{ item.qbittorrent_docker_name }} /config/qbit-mgmt/run.sh"
+  with_items: "{{ qbittorrent_instances }}"
+  listen: run qbit-mgmt

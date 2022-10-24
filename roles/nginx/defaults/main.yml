@@ -1,0 +1,8 @@
+---
+nginx_docker_reload_cmd: docker exec {{ nginx_docker_name }} nginx -s reload -c /config/nginx/nginx.conf
+nginx_docker_repo: linuxserver/nginx
+nginx_docker_tag: latest
+nginx_pgid: 1000
+nginx_pgroup: abc
+nginx_puid: 1000
+nginx_puser: abc

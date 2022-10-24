@@ -1,0 +1,28 @@
+#!/bin/bash
+
+docker-compose \
+    --project-name "{{ docker_compose_project_name }}" \
+{% for item in overseerr_instances %}
+    --file "{{ item.overseerr_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in plex_server_instances %}
+    --file "{{ item.plex_server_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in prowlarr_instances %}
+    --file "{{ item.prowlarr_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in qbittorrent_instances %}
+    --file "{{ item.qbittorrent_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in radarr_instances %}
+    --file "{{ item.radarr_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in sonarr_instances %}
+    --file "{{ item.sonarr_base_dir }}/docker-compose.yml" \
+{% endfor %}
+{% for item in tautulli_instances %}
+    --file "{{ item.tautulli_base_dir }}/docker-compose.yml" \
+{% endfor %}
+    --file "{{ gluetun_base_dir }}/docker-compose.yml" \
+    --file "{{ nginx_base_dir }}/docker-compose.yml" \
+    $@

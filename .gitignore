@@ -1,0 +1,4 @@
+*.retry
+.keepass-vault.kdbx
+/node_modules/
+__pycache__

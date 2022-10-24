@@ -1,0 +1,4 @@
+---
+prowlarr_bind: "127.0.0.1"
+prowlarr_docker_repo: linuxserver/prowlarr
+prowlarr_docker_tag: develop

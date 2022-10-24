@@ -1,0 +1,16 @@
+---
+# lxml package is needed to do xml operations in tasks
+- name: Ensure python3-lxml package is present
+  package:
+    name: python3-lxml
+    state: present
+  when: radarr_instances is defined
+
+- name: Radarr instance
+  include_tasks: radarr_instance.yml
+  vars: 
+    instance: "{{ instance_var }}"
+  with_items: "{{ radarr_instances }}"
+  when: radarr_instances is defined
+  loop_control:  
+    loop_var: instance_var

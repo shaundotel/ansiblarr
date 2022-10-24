@@ -1,0 +1,102 @@
+---
+ansible_host: "{{ lookup('ansible.builtin.env', 'ARR_HOST') }}"
+
+nginx_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'nginx') }}"
+nginx_docker_reload_cmd: >-
+  docker compose 
+  --project-name {{ docker_compose_project_name }} 
+  exec {{ nginx_docker_name }} 
+  nginx -s reload -c /config/nginx/nginx.conf
+nginx_server_headers:
+  Server: "{{ lookup('keepass', '/arr/nginx_headers', 'Server') }}"
+  rayband: "{{ lookup('keepass', '/arr/nginx_headers', 'rayband') }}"
+nginx_http_port: "{{ lookup('keepass', '/arr/ports', 'nginx_http') }}"
+nginx_https_port: "{{ lookup('keepass', '/arr/ports', 'nginx_https') }}"
+
+arr_user: "{{ lookup('keepass', '/arr/user', 'user') }}"
+arr_uid: "{{ lookup('keepass', '/arr/user', 'uid') }}"
+arr_user_group: "{{ lookup('keepass', '/arr/user', 'user_group') }}"
+arr_gid: "{{ lookup('keepass', '/arr/user', 'gid') }}"
+
+nginx_base_dir: "{{ lookup('keepass', '/arr/paths', 'nginx_base_dir') }}"
+
+# butler variables
+overseerr_instances:
+  - overseerr_base_dir: "{{ lookup('keepass', '/arr/paths', 'overseerr_base_dir') }}"
+    overseerr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'overseerr') }}"
+    overseerr_port: "{{ lookup('keepass', '/arr/ports', 'overseerr') }}"
+
+prowlarr_instances:
+  - prowlarr_base_dir: "{{ lookup('keepass', '/arr/paths', 'prowlarr_base_dir') }}"
+    prowlarr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'prowlarr') }}"
+    prowlarr_port: "{{ lookup('keepass', '/arr/ports', 'prowlarr') }}"
+
+qbittorrent_instances:
+  - qbittorrent_base_dir: "{{ lookup('keepass', '/arr/paths', 'qbittorrent_base_dir') }}"
+    qbittorrent_data_mounts:
+      - host: "{{ lookup('keepass', '/arr/paths', 'download_dir') }}"
+        mount: /downloads/
+    qbittorrent_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'qbit') }}"
+    qbittorrent_webui_port: "{{ lookup('keepass', '/arr/ports', 'qbittorrent_web_ui') }}"
+    qbittorrent_nginx_location: "qt"
+    qbittorrent_credentials:
+      username: "{{ lookup('keepass', '/arr/qbit', 'username') }}"
+      password: "{{ lookup('keepass', '/arr/qbit', 'password') }}"
+
+radarr_instances:
+  - radarr_base_dir: "{{ lookup('keepass', '/arr/paths', 'radarr_base_dir') }}"
+    radarr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'radarr') }}"
+    radarr_data_dirs:
+      - "{{ lookup('keepass', '/arr/paths', 'media_dir') }}"
+    radarr_port: "{{ lookup('keepass', '/arr/ports', 'radarr') }}"
+  - radarr_base_dir: "{{ lookup('keepass', '/arr/paths', 'radarr4k_base_dir') }}"
+    radarr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'radarr4k') }}"
+    radarr_data_dirs:
+      - "{{ lookup('keepass', '/arr/paths', 'media_dir') }}"
+    radarr_port: "{{ lookup('keepass', '/arr/ports', 'radarr4k') }}"
+
+sonarr_instances:
+  - sonarr_base_dir: "{{ lookup('keepass', '/arr/paths', 'sonarr_base_dir') }}"
+    sonarr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'sonarr') }}"
+    sonarr_flix_data:
+      - "{{ lookup('keepass', '/arr/paths', 'media_dir') }}"
+    sonarr_port: "{{ lookup('keepass', '/arr/ports', 'sonarr') }}"
+  - sonarr_base_dir: "{{ lookup('keepass', '/arr/paths', 'sonarr4k_base_dir') }}"
+    sonarr_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'sonarr4k') }}"
+    sonarr_flix_data:
+      - "{{ lookup('keepass', '/arr/paths', 'media_dir') }}"
+    sonarr_port: "{{ lookup('keepass', '/arr/ports', 'sonarr4k') }}"
+
+# playboy variables
+tautulli_instances:
+  - tautulli_base_dir: "{{ lookup('keepass', '/arr/paths', 'tautulli_base_dir') }}"
+    tautulli_plex_log_dir: '{{ plex_server_instances[0].plex_server_base_dir }}/Library/Application Support/Plex Media Server/Logs'
+    tautulli_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'tautulli') }}"
+    tautulli_http_port: "{{ lookup('keepass', '/arr/ports', 'tautulli') }}"
+
+plex_server_instances:
+  - plex_server_base_dir: "{{ lookup('keepass', '/arr/paths', 'plex_server_base_dir') }}"
+    plex_server_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'plex_server') }}"
+    plex_server_data_dirs:
+      - "{{ lookup('keepass', '/arr/paths', 'media_dir') }}"
+
+# Gluetun variable
+arr_vpn_docker_name: "{{ lookup('keepass', '/arr/docker_names', 'vpn') }}"
+gluetun_base_dir: "{{ lookup('keepass', '/arr/vpn', 'base_dir') }}"
+gluetun_openvpn_password: "{{ lookup('keepass', '/pia_vpn/account', 'password') }}"
+gluetun_openvpn_user: "{{ lookup('keepass', '/pia_vpn/account', 'username') }}"
+gluetun_server_regions: "{{ lookup('keepass', '/arr/vpn', 'server_regions') }}"
+gluetun_vpn_server_provider: "{{ lookup('keepass', '/arr/vpn', 'service_provider') }}"
+
+# Docker Compose variables
+docker_compose_file_version: "2.4"
+docker_compose_project_name: "{{ lookup('keepass', '/arr/docker_compose', 'project_name') }}"
+docker_compose_arr_lan_ip_range: "{{ lookup('keepass', '/arr/docker_compose', 'arr_lan_ip_range') }}"
+docker_compose_default_logging:
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: 3
+
+# Stack pack variables
+stack_pack_base_dir: "{{ lookup('keepass', '/arr/paths', 'stack_pack_base_dir') }}"
